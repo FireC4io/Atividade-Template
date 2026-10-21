@@ -1,21 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Avatar, Text, TextInput, Button, Divider, IconButton, } from 'react-native-paper';
 
 //campo  de imagem
 import * as ImagePicker from 'expo-image-picker';
 
+import { API_URL } from './Api';
+import { UsuarioContext } from './UsuarioContext';
+
 const Perfil = ({ navigation }) => {
 
-    // Dados do usuário -> receber os dados  via banco de dados
-    const [nome, setNome] = useState('Emerson');
-    const [email, setEmail] = useState('emerson@email.com');
-    const [telefone, setTelefone] = useState('(15) 99999-9999');
-    const [cpf, setCpf] = useState('000.000.000-00');
+    // Usuário logado (dados que vieram do banco no login)
+    const { usuario, setUsuario } = useContext(UsuarioContext);
+
+    // Os campos começam com os dados do usuário logado
+    const [nome, setNome] = useState(usuario ? usuario.nome : '');
+    const [email, setEmail] = useState(usuario ? usuario.email : '');
+    const [telefone, setTelefone] = useState(usuario && usuario.telefone ? usuario.telefone : '');
+    const [cpf, setCpf] = useState(usuario && usuario.cpf ? usuario.cpf : '');
     const [senha, setSenha] = useState('');
 
     // Imagem do usuário
-    const [imagem, setImagem] = useState(null);
+    const [imagem, setImagem] = useState(usuario && usuario.imagem ? usuario.imagem : null);
+
+    // Só usuário logado pode ver o perfil
+    if (!usuario) {
+        return (
+            <View style={styles.formulario}>
+                <Text style={{ textAlign: 'center', marginVertical: 30 }}>
+                    Faça login para ver seu perfil.
+                </Text>
+                <Button mode="contained" style={styles.botao} onPress={() => navigation.navigate('Login')}>
+                    IR PARA O LOGIN
+                </Button>
+            </View>
+        );
+    }
 
     // ==============================
     // ESCOLHER IMAGEM
@@ -34,12 +54,13 @@ const Perfil = ({ navigation }) => {
             mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.8,
+            quality: 0.3,
+            base64: true, // imagem em forma de texto para salvar no banco
         });
 
         // Verifica se o usuário escolheu uma imagem
         if (!resultado.canceled) {
-            setImagem(resultado.assets[0].uri);
+            setImagem('data:image/jpeg;base64,' + resultado.assets[0].base64);
         }
 
     };
@@ -48,19 +69,29 @@ const Perfil = ({ navigation }) => {
     // SALVAR PERFIL
     // ==============================
 
-    const salvarPerfil = () => {
-        console.log('Dados do perfil:', {
-            nome,
-            email,
-            telefone,
-            cpf,
-            senha,
-            imagem,
+    const salvarPerfil = async () => {
+        try {
+            // Envia os dados novos para a API
+            const resposta = await fetch(API_URL + '/usuarios/' + usuario._id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, email, telefone, cpf, senha, imagem }),
+            });
 
-        });
+            const dados = await resposta.json();
 
-         alert('Perfil atualizado com sucesso!');
+            if (!resposta.ok) {
+                alert(dados.mensagem);
+                return;
+            }
 
+            // Atualiza o usuário logado (o nome no menu muda na hora)
+            setUsuario(dados);
+            setSenha('');
+            alert('Perfil atualizado com sucesso!');
+        } catch (erro) {
+            alert('Não foi possível conectar com a API.');
+        }
     };
 
 

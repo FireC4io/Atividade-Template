@@ -171,6 +171,87 @@ cadastroButton: {
 menuHeader: {
                 padding: 20,
                 backgroundColor: '#C0C0C0',
-            }
+            },
+
+// ========= ABA ESCOLHIDA / LISTA VAZIA / BOTÃO + ================
+
+tabAtiva: {
+    backgroundColor: '#eda73e',
+},
+
+vazio: {
+    textAlign: 'center',
+    marginVertical: 20,
+    color: '#555555',
+},
+
+fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 30,
+},
+
+// ========= ÁREA ADMINISTRATIVA ================
+
+adminContainer: {
+    flex: 1,
+    backgroundColor: '#EEEEEE',
+},
+
+adminContent: {
+    padding: 20,
+    paddingBottom: 40,
+},
+
+adminTexto: {
+    marginTop: 5,
+    marginBottom: 10,
+    color: '#555555',
+},
+
+adminButton: {
+    marginTop: 10,
+    marginBottom: 15,
+    marginHorizontal: 0,
+    borderRadius: 5,
+},
+
+adminItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    marginBottom: 8,
+},
+
+// ========= FORMULÁRIO DE CONTEÚDO ================
+
+formImagem: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+},
+
+formSemImagem: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    backgroundColor: '#DDDDDD',
+    justifyContent: 'center',
+    alignItems: 'center',
+},
+
+formLabel: {
+    marginBottom: 5,
+    fontWeight: 'bold',
+},
+
+formCategorias: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+},
+
+formCategoria: {
+    marginRight: 5,
+    marginBottom: 5,
+},
 
 });

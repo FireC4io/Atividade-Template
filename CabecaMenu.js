@@ -1,28 +1,27 @@
-import {useState} from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { useState, useContext } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Avatar, Text, IconButton, Portal, Dialog, Button } from 'react-native-paper';
-import { Icon } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-const CabecalhoMenu = () => {
+import { UsuarioContext } from './UsuarioContext';
 
-  // Por enquanto os dados estão fixos.
-  // Depois vamos buscar essas informações do usuário que fez login.
-  const usuario = {
-    nome: 'Emerson',
-    email: 'emerson@email.com',
-  };
+const CabecalhoMenu = ({ navigation }) => {
 
-  const navigation = useNavigation();
+  // Usuário logado (vem do App.js). null = ninguém logado
+  const { usuario, setUsuario } = useContext(UsuarioContext);
+
   const [dialogSair, setDialogSair] = useState(false);
+
+  // Fecha o menu e abre a tela escolhida
+  const ir = (tela) => {
+    navigation.closeDrawer();
+    navigation.navigate('Início', { screen: tela });
+  };
 
   const confirmarSaida = () => {
     setDialogSair(false);
-    //Coloque aqui sua lógica de logout
-    console.log("Usuário saiu");
-    // Exemplo:
-    navigation.navigate("Login");
+    // Logout: esquece o usuário logado
+    setUsuario(null);
+    ir('Home');
   };
-
 
 
   return (
@@ -31,12 +30,16 @@ const CabecalhoMenu = () => {
 
       {/* Área do usuário */}
       <View style={styles.usuario}>
-        {/* Avatar */}
-        <Avatar.Icon
-          size={65}
-          icon="account"
-          style={styles.avatar}
-        />
+        {/* Avatar: foto do perfil, se tiver */}
+        {usuario && usuario.imagem ? (
+          <Avatar.Image size={65} source={{ uri: usuario.imagem }} />
+        ) : (
+          <Avatar.Icon
+            size={65}
+            icon="account"
+            style={styles.avatar}
+          />
+        )}
 
         {/* Nome e e-mail */}
         <View style={styles.informacoes}>
@@ -45,7 +48,7 @@ const CabecalhoMenu = () => {
             variant="titleMedium"
             style={styles.nome}
           >
-            {usuario.nome}
+            {usuario ? usuario.nome : 'Visitante'}
           </Text>
 
           <Text
@@ -53,7 +56,7 @@ const CabecalhoMenu = () => {
             style={styles.email}
             numberOfLines={1}
           >
-            {usuario.email}
+            {usuario ? usuario.email : 'Faça login para gerenciar'}
           </Text>
 
         </View>
@@ -61,20 +64,58 @@ const CabecalhoMenu = () => {
       </View>
 
 
-      {/* Área do perfil */}
-      <View style={styles.perfil}>
-        <Text
-          variant="bodyMedium"
-          style={styles.perfilTexto}>
-          Meu perfil
-        </Text>
-        <IconButton
-          icon="account"
-          iconColor="white"
-          size={24}
-          onPress={{}}
-        />
-      </View>
+      {/* Sem usuário logado: mostra o botão de entrar */}
+      {!usuario ? (
+        <View style={styles.perfil}>
+          <Text
+            variant="bodyMedium"
+            style={styles.perfilTexto}>
+            Entrar / Cadastrar
+          </Text>
+          <IconButton
+            icon="login"
+            iconColor="white"
+            size={24}
+            onPress={() => ir('Acesso')}
+          />
+        </View>
+      ) : null}
+
+
+      {/* Área do perfil (só logado) */}
+      {usuario ? (
+        <View style={styles.perfil}>
+          <Text
+            variant="bodyMedium"
+            style={styles.perfilTexto}>
+            Meu perfil
+          </Text>
+          <IconButton
+            icon="account"
+            iconColor="white"
+            size={24}
+            onPress={() => ir('Perfil')}
+          />
+        </View>
+      ) : null}
+
+
+      {/* Área administrativa (só logado) */}
+      {usuario ? (
+        <View style={styles.perfil}>
+          <Text
+            variant="bodyMedium"
+            style={styles.perfilTexto}>
+            Área administrativa
+          </Text>
+          <IconButton
+            icon="view-dashboard"
+            iconColor="white"
+            size={24}
+            onPress={() => ir('Admin')}
+          />
+        </View>
+      ) : null}
 
 
       {/* Área do Notificação */}
@@ -88,7 +129,7 @@ const CabecalhoMenu = () => {
           icon="bell"
           iconColor="white"
           size={24}
-          onPress={{}}
+          onPress={() => alert('Nenhuma notificação.')}
         />
       </View>
 
@@ -103,40 +144,45 @@ const CabecalhoMenu = () => {
           icon="magnify"
           iconColor="white"
           size={24}
-          onPress={() => navigation.navigate('Perfil')}
-        />
-      </View>
-      {/* Área do configuração */}
-      <View style={styles.perfil}  >
-
-        <Text
-          variant="bodyMedium"
-          style={styles.perfilTexto}>
-          Configuração
-        </Text>
-        <IconButton
-          icon="cog"
-          iconColor="white"
-          size={24}
-          onPress={() => navigation.navigate('Perfil')}
+          onPress={() => ir('Pesquisa')}
         />
       </View>
 
-      {/* Área do sair */}
-      <View style={styles.perfil}>
-        <Text
-          variant="bodyMedium"
-          style={styles.perfilTexto}>
-          Sair
-        </Text>
-        <IconButton
-          icon="logout"
-          iconColor="white"
-          size={24}
-          onPress={() => setDialogSair(true)}
-        />
+      {/* Área do configuração (só logado) */}
+      {usuario ? (
+        <View style={styles.perfil}  >
 
-      </View>
+          <Text
+            variant="bodyMedium"
+            style={styles.perfilTexto}>
+            Configuração
+          </Text>
+          <IconButton
+            icon="cog"
+            iconColor="white"
+            size={24}
+            onPress={() => ir('Perfil')}
+          />
+        </View>
+      ) : null}
+
+      {/* Área do sair (só logado) */}
+      {usuario ? (
+        <View style={styles.perfil}>
+          <Text
+            variant="bodyMedium"
+            style={styles.perfilTexto}>
+            Sair
+          </Text>
+          <IconButton
+            icon="logout"
+            iconColor="white"
+            size={24}
+            onPress={() => setDialogSair(true)}
+          />
+
+        </View>
+      ) : null}
 
 
       {/* Dialog de confirmação */}

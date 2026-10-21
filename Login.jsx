@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View } from 'react-native';
 
 import {
@@ -9,6 +9,8 @@ import {
 } from 'react-native-paper';
 
 import { styles } from './css/Styles';
+import { API_URL } from './Api';
+import { UsuarioContext } from './UsuarioContext';
 
 const Login = ({ navigation }) => {
 
@@ -16,9 +18,39 @@ const Login = ({ navigation }) => {
     const [senha, setSenha] = React.useState('');
     const [mostrarSenha, setMostrarSenha] = React.useState(false);
 
-    const entrar = () => {
-        console.log('E-mail:', email);
-        console.log('Senha:', senha);
+    // Função que guarda o usuário logado (vem do App.js)
+    const { setUsuario } = useContext(UsuarioContext);
+
+    const entrar = async () => {
+
+        if (email === '' || senha === '') {
+            alert('Informe e-mail e senha.');
+            return;
+        }
+
+        try {
+            // Pergunta para a API se o e-mail e a senha estão certos
+            const resposta = await fetch(API_URL + '/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, senha: senha }),
+            });
+
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                alert(dados.mensagem);
+                return;
+            }
+
+            // Deu certo: guarda o usuário e volta para a tela inicial
+            setUsuario(dados);
+            setEmail('');
+            setSenha('');
+            navigation.navigate('Home');
+        } catch (erro) {
+            alert('Não foi possível conectar com a API.');
+        }
     };
 
     return (
@@ -109,7 +141,7 @@ const Login = ({ navigation }) => {
                     mode="contained"
                     icon="login"
                     style={styles.loginButton}
-                    onPress={()=>navigation.navigate("Perfil")}
+                    onPress={entrar}
                 >
                     ENTRAR
                 </Button>

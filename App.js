@@ -5,10 +5,9 @@ import { View } from 'react-native';
 //React Navigation
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createDrawerNavigator,  DrawerContentScrollView } from '@react-navigation/drawer';
+import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 
-import { styles } from './css/Styles';
-import { PaperProvider, Provider, Avatar, Text, } from 'react-native-paper';
+import { PaperProvider } from 'react-native-paper';
 import { theme } from './theme/theme';
 
 // AppBar
@@ -17,14 +16,20 @@ import AppBar from './AppBar';
 import Pesquisa from './Pesquisa';
 // Acesso
 import Acesso from './Acesso';
-//Login 
+//Login
 import Login from './Login';
 //Cadastro
 import Cadastro from './Cadastro';
 // Perfil
 import { Perfil } from './Perfil';
+// Área administrativa
+import Admin from './Admin';
+// Formulário de conteúdo (novo / editar)
+import FormConteudo from './FormConteudo';
 //cabeçalho do menu
 import { CabecalhoMenu } from './CabecaMenu';
+// Usuário logado
+import { UsuarioContext } from './UsuarioContext';
 
 
 const Stack = createNativeStackNavigator();
@@ -43,6 +48,8 @@ function stackNavigator() {
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Cadastro" component={Cadastro} />
       <Stack.Screen name="Perfil" component={Perfil} />
+      <Stack.Screen name="Admin" component={Admin} />
+      <Stack.Screen name="FormConteudo" component={FormConteudo} />
     </Stack.Navigator>
   );
 }
@@ -57,7 +64,7 @@ function DrawerNavigation() {
       drawerContent={(props) => (
         <View style={{ flex: 1 }}>
 
-          <CabecalhoMenu />
+          <CabecalhoMenu navigation={props.navigation} />
 
 
           <DrawerContentScrollView {...props} />
@@ -69,16 +76,15 @@ function DrawerNavigation() {
         name="Início"
         component={stackNavigator}
       />
-      <Drawer.Screen
-        name="Séries"
-        component={AppBar}
-      />
     </ Drawer.Navigator>
   );
 }
 
 export default function App() {
   const [loading, setLoading] = useState(true);
+
+  // Usuário logado (null = ninguém logado)
+  const [usuario, setUsuario] = useState(null);
 
   useEffect(() => {
     setTimeout(() => { setLoading(false); }, 10000);
@@ -89,14 +95,15 @@ export default function App() {
   }
 
   return (
-    <PaperProvider theme={theme}>
-      <NavigationContainer>
+    // Deixa o usuário disponível para todas as telas
+    <UsuarioContext.Provider value={{ usuario, setUsuario }}>
+      <PaperProvider theme={theme}>
+        <NavigationContainer>
 
-        <DrawerNavigation />
+          <DrawerNavigation />
 
-      </NavigationContainer>
-    </PaperProvider>
+        </NavigationContainer>
+      </PaperProvider>
+    </UsuarioContext.Provider>
   );
 }
-
-

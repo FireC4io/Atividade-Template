@@ -9,6 +9,7 @@ import {
 } from 'react-native-paper';
 
 import { styles } from './css/Styles';
+import { API_URL } from './Api';
 
 const Cadastro = ({ navigation }) => {
 
@@ -20,12 +21,39 @@ const Cadastro = ({ navigation }) => {
     const [mostrarSenha, setMostrarSenha] = React.useState(false);
     const [mostrarConfirmacao, setMostrarConfirmacao] = React.useState(false);
 
-    const cadastrar = () => {
+    const cadastrar = async () => {
 
-        console.log('Nome:', nome);
-        console.log('E-mail:', email);
-        console.log('Senha:', senha);
-        console.log('Confirmar senha:', confirmarSenha);
+        // Validações simples antes de enviar
+        if (nome === '' || email === '' || senha === '') {
+            alert('Preencha todos os campos.');
+            return;
+        }
+
+        if (senha !== confirmarSenha) {
+            alert('As senhas não são iguais.');
+            return;
+        }
+
+        try {
+            // Envia os dados para a API salvar no banco
+            const resposta = await fetch(API_URL + '/usuarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome: nome, email: email, senha: senha }),
+            });
+
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                alert(dados.mensagem);
+                return;
+            }
+
+            alert('Cadastro realizado! Agora faça o login.');
+            navigation.navigate('Login');
+        } catch (erro) {
+            alert('Não foi possível conectar com a API.');
+        }
 
     };
 
